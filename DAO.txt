@@ -1,0 +1,555 @@
+package database;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import com.mysql.cj.jdbc.Driver;
+
+public class JDBCUtil {
+	public static Connection getConnection() {
+		Connection c = null;
+		
+		try {
+			// Đăng ký MySQL Driver với DriverManager
+			DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+			
+			// Các thông số
+			String url = "jdbc:mySQL://localhost:3306/nhasach";
+			String username = "root";
+			String password = "";
+			
+			// Tạo kết nối
+			c = DriverManager.getConnection(url, username, password);
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return c;
+	}
+	
+	public static void closeConnection(Connection c) {
+		try {
+			if(c!=null) {
+				c.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void printInfo(Connection c) {
+		try {
+			if(c!=null) {
+				DatabaseMetaData mtdt = c.getMetaData();
+				System.out.println(mtdt.getDatabaseProductName());
+				System.out.println(mtdt.getDatabaseProductVersion());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+
+
+package model;
+
+public class User {
+	private String username;
+	private String password;
+	private String hovaten;
+	
+	public User() {
+		super();
+	}
+
+	public User(String username, String password, String hovaten) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.hovaten = hovaten;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getHovaten() {
+		return hovaten;
+	}
+
+	public void setHovaten(String hovaten) {
+		this.hovaten = hovaten;
+	}
+
+	@Override
+	public String toString() {
+		return "User [username=" + username + ", password=" + password + ", hovaten=" + hovaten + "]";
+	}
+	
+	
+}
+
+
+
+package dao;
+
+import java.util.ArrayList;
+
+public interface DAOInterface {
+	
+	public int insert(T t);
+	
+	public int update(T t);
+	
+	public int delete(T t);
+	
+	public ArrayList selectAll();
+	
+	public T selectById(T t);
+	
+	public ArrayList selectByCondition(String condition);
+	
+}
+
+
+ 
+//KHÔNG NÊN DÙNG STATEMENT
+package dao;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import database.JDBCUtil;
+import model.User;
+
+public class UserDAO2 implements DAOInterface{
+
+	public static UserDAO2 getInstance() {
+		return new UserDAO2();
+	}
+	
+	@Override
+	public int insert(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			Statement st = con.createStatement();
+			
+			// Bước 3: thực thi câu lệnh SQL
+			String sql = "INSERT INTO User (username, password, hovaten) "+
+						" VALUES ('"+t.getUsername()+"' , '"+t.getPassword()+"' , '"+ t.getHovaten()+"')";
+
+			ketQua = st.executeUpdate(sql);
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public int update(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			Statement st = con.createStatement();
+			
+			// Bước 3: thực thi câu lệnh SQL
+			
+			String sql = "UPDATE User "+
+						 " SET " +
+						 " password='"+ t.getPassword()+"'"+
+						 ", hovaten='"+ t.getHovaten()+"'"+
+						 " WHERE username='"+t.getUsername()+"'";
+			System.out.println(sql);
+			ketQua = st.executeUpdate(sql);
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public int delete(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			Statement st = con.createStatement();
+			
+			// Bước 3: thực thi câu lệnh SQL
+			
+			String sql = "DELETE from User "+
+						 " WHERE username='"+t.getUsername()+"'";
+			System.out.println(sql);
+			ketQua = st.executeUpdate(sql);
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public ArrayList selectAll() {
+		ArrayList ketQua = new ArrayList();
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			Statement st = con.createStatement();
+			
+			// Bước 3: thực thi câu lệnh SQL
+			
+			String sql = "SELECT * FROM User";
+			System.out.println(sql);
+			ResultSet rs = st.executeQuery(sql);
+			
+			// Bước 4:
+			while(rs.next()) {
+				String username = rs.getString("username");
+				String password = rs.getString("password");
+				String hovaten = rs.getString("hovaten");
+				
+				User User = new User(username, password, hovaten);
+				ketQua.add(User);
+			}
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public User selectById(User t) {
+		User ketQua = null;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			Statement st = con.createStatement();
+			
+			// Bước 3: thực thi câu lệnh SQL
+			
+			String sql = "SELECT * FROM User where username='"+t.getUsername()+"'";
+			System.out.println(sql);
+			ResultSet rs = st.executeQuery(sql);
+			
+			// Bước 4:
+			while(rs.next()) {
+				String username = rs.getString("username");
+				String password = rs.getString("password");
+				String hovaten = rs.getString("hovaten");
+				
+				ketQua = new User(username, password, hovaten);
+				
+			}
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ketQua;
+	}
+
+	@Override
+	public ArrayList selectByCondition(String condition) {
+		ArrayList ketQua = new ArrayList();
+	
+		return ketQua;
+	}
+
+}
+
+ 
+
+// NÊN THAY THẾ BẰNG PREPAREDSTATEMENT
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
+import database.JDBCUtil;
+import model.User;
+
+public class UserDAO implements DAOInterface{
+
+	public static UserDAO getInstance() {
+		return new UserDAO();
+	}
+	
+	@Override
+	public int insert(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			String sql = "INSERT INTO User (username, password, hovaten) "+
+					" VALUES (?,?,?)";
+			
+			PreparedStatement st = con.prepareStatement(sql);
+			st.setString(1, t.getUsername());
+			st.setString(2, t.getPassword());
+			st.setString(3, t.getHovaten());
+			
+			// Bước 3: thực thi câu lệnh SQL
+			ketQua = st.executeUpdate();
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public int update(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			String sql = "UPDATE User "+
+					 " SET " +
+					 " password=?"+
+					 ", hovaten=?"+
+					 " WHERE username=?";
+			
+			PreparedStatement st = con.prepareStatement(sql);
+			st.setString(1, t.getPassword());
+			st.setString(2, t.getHovaten());
+			st.setString(3, t.getUsername());
+			// Bước 3: thực thi câu lệnh SQL
+
+			System.out.println(sql);
+			ketQua = st.executeUpdate();
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public int delete(User t) {
+		int ketQua = 0;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			String sql = "DELETE from User "+
+					 " WHERE username=?";
+			
+			PreparedStatement st = con.prepareStatement(sql);
+			st.setString(1, t.getUsername());
+			
+			// Bước 3: thực thi câu lệnh SQL
+			System.out.println(sql);
+			ketQua = st.executeUpdate();
+			
+			// Bước 4:
+			System.out.println("Bạn đã thực thi: "+ sql);
+			System.out.println("Có "+ ketQua+" dòng bị thay đổi!");
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public ArrayList selectAll() {
+		ArrayList ketQua = new ArrayList();
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			String sql = "SELECT * FROM User";
+			PreparedStatement st = con.prepareStatement(sql);
+			
+			// Bước 3: thực thi câu lệnh SQL
+			System.out.println(sql);
+			ResultSet rs = st.executeQuery();
+			
+			// Bước 4:
+			while(rs.next()) {
+				String username = rs.getString("username");
+				String password = rs.getString("password");
+				String hovaten = rs.getString("hovaten");
+				
+				User User = new User(username, password, hovaten);
+				ketQua.add(User);
+			}
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return ketQua;
+	}
+
+	@Override
+	public User selectById(User t) {
+		User ketQua = null;
+		try {
+			// Bước 1: tạo kết nối đến CSDL
+			Connection con = JDBCUtil.getConnection();
+			
+			// Bước 2: tạo ra đối tượng statement
+			String sql = "SELECT * FROM User where username=?";
+			PreparedStatement st = con.prepareStatement(sql);
+			st.setString(1, t.getUsername());
+			
+			// Bước 3: thực thi câu lệnh SQL
+			System.out.println(sql);
+			ResultSet rs = st.executeQuery();
+			
+			// Bước 4:
+			while(rs.next()) {
+				String username = rs.getString("username");
+				String password = rs.getString("password");
+				String hovaten = rs.getString("hovaten");
+				
+				ketQua = new User(username, password, hovaten);
+				
+			}
+			
+			// Bước 5:
+			JDBCUtil.closeConnection(con);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ketQua;
+	}
+
+	@Override
+	public ArrayList selectByCondition(String condition) {
+		ArrayList ketQua = new ArrayList();
+	
+		return ketQua;
+	}
+
+}
+
+
+
+package test;
+
+import java.util.ArrayList;
+
+import dao.SachDAO;
+import dao.UserDAO;
+import model.Sach;
+import model.User;
+
+public class TestUser {
+	public static void main(String[] args) {
+//		User u1 = new User("u1", "u123", "UUU");
+//		UserDAO.getInstance().insert(u1);
+		System.out.println("---------------------");
+		
+		
+//		User u_find = new User("u1", "u123", "UUU");
+//		User u_result = UserDAO.getInstance().selectById(u_find);
+//		System.out.println(u_result);
+		
+		User u_find = new User("x\' or 1=1; -- ", "", "");
+		User u_result = UserDAO.getInstance().selectById(u_find);
+		System.out.println(u_result);
+		
+	}
+}
